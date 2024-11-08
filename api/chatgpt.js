@@ -1,6 +1,6 @@
 let currentSentence = '';
 
-async function getSentence() {
+export default async function getSentence() {
     const difficulty = document.getElementById('difficulty').value;
     const prompt = `Provide a sentence in Chinese from a real source (REQUIRED, do not fabricate), provide source link in paranthesis, DLPT ILR Level ${difficulty}. Only reply with the passage, this is for translation practice.`;
     
@@ -35,7 +35,7 @@ async function getSentence() {
     }
 }
 
-async function submitTranslation() {
+export default async function submitTranslation() {
     const userTranslation = document.getElementById('translation').value.trim();
     const difficulty = document.getElementById('difficulty').value;
     try {
