@@ -75,6 +75,6 @@ async function submitTranslation() {
 }
 
 // Load the first sentence when the page loads
-window.onload = getSentence;
+//window.onload = getSentence;
   
     
