@@ -35,7 +35,7 @@ export default async function getSentence() {
     }
 }
 
-export default async function submitTranslation() {
+export async function submitTranslation() {
     const userTranslation = document.getElementById('translation').value.trim();
     const difficulty = document.getElementById('difficulty').value;
     try {
