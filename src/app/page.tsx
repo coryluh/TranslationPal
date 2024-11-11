@@ -1,10 +1,13 @@
-'use client'
+"use client"
+import { useState } from 'react';
+import Dropdown from "./lib/Dropdown"
 
+/*
 let currentSentence = '';
 
-async function get_sentence() {
-    const difficulty = document.getElementById('difficulty').value;
-    const prompt = `Provide a sentence in Chinese from a real source (REQUIRED, do not fabricate), provide source link in paranthesis, DLPT ILR Level ${difficulty}. Only reply with the passage, this is for translation practice.`;
+async function get_sentence(_difficulty) {
+    const difficulty = _difficulty;
+    const prompt = `Provide a sentence in Chinese from the internet (REQUIRED, do not fabricate), provide source link in paranthesis, DLPT ILR Level ${difficulty}. Only reply with the passage, this is for translation practice.`;
     
     try {
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -37,7 +40,7 @@ async function get_sentence() {
     }
 }
 
-export async function rate_sentence() {
+async function rate_sentence() {
     const userTranslation = document.getElementById('translation').value.trim();
     const difficulty = document.getElementById('difficulty').value;
     try {
@@ -75,23 +78,118 @@ export async function rate_sentence() {
         console.error('Error submitting translation:', error);
     }
 }
+*/
+
+function SentenceFetcher({ currentSentence, error }) {
+  return (
+    <div>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+      <button>New Sentence</button>
+      <p>{currentSentence || ""}</p>
+    </div>
+  );
+}
+
+
+function RateButton({currentSentence, currentTranslation}){
+  console.log(currentSentence, currentTranslation)
+  const [rating, setRating] = useState('');
+
+  const getTranslation = async (sentence, translation) => {
+    console.log(`${sentence}, ${translation}`);
+    const prompt = `Rate the following translation from 1 to 10. Provide feedback if possible, breaking the sentence down and explaining the structure.\n\nOriginal sentence: "${sentence}"\nUser translation: "${translation}. `;
+    console.log("Workin on rating")
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'system', content: prompt }],
+          max_tokens: 100,
+          temperature: 0.5
+        })
+      });
+
+      if (!response.ok) {
+        const errorDetails = await response.text();
+        console.error('Error response:', response.status, errorDetails);
+        return;
+      }
+
+      const data = await response.json();
+      setRating(data.choices[0].message.content.trim());
+    } catch (error) {
+      console.error('Error translation sentence:', error);
+    }
+  };
+
+  return (
+    <div>
+      <button onClick={() => getTranslation(currentSentence, currentTranslation)}>Submit</button>
+      <p id="result">{rating}</p>
+    </div>
+    
+  ); 
+}
 
 export default function Home() {
+
+  const [currentSentence, setCurrentSentence] = useState("Placeholder Sentence");
+  const [error, setError] = useState(null);
+  const [currentText, setCurrentText] = useState("User Translation");
+
+  const getSentence = async (_difficulty) => {
+    const prompt = `Provide a sentence in Chinese from the internet (REQUIRED, do not fabricate), provide source link in parentheses, DLPT ILR Level ${_difficulty}. Only reply with the passage, this is for translation practice.`;
+    console.log("Workin")
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'system', content: prompt }],
+          max_tokens: 100,
+          temperature: 1
+        })
+      });
+
+      if (!response.ok) {
+        const errorDetails = await response.text();
+        console.error('Error response:', response.status, errorDetails);
+        return;
+      }
+
+      const data = await response.json();
+      setCurrentSentence(data.choices[0].message.content.trim());
+      setError(null); // Clear any previous error
+    } catch (error) {
+      console.error('Error fetching sentence:', error);
+    }
+  };
+
+  const handleSelectionChange = (selectedOption="1+") => {
+    getSentence(selectedOption);
+  };
+
   return (
-      <div id="container">
-        <h1>Chinese Translation GPT Assistant</h1>
-        <label>Select ILR Difficulty Level:</label>
-        <select id="difficulty">
-            <option value="1+">ILR Level 1+</option>
-            <option value="2">ILR Level 2</option>
-            <option value="2+">ILR Level 2+</option>
-            <option value="3">ILR Level 3</option>
-        </select>
-        <div id="sentence">Loading...</div>
-        <input type="text" id="translation" placeholder="Enter your translation"></input>
-        <button>Submit</button>
-        <button onClick={get_sentence}>New Sentence</button>
-        <div id="result"></div>
+    <div id="container">
+      <h1>Chinese Translation GPT Assistant</h1>
+      <label>Select ILR Difficulty Level:</label>
+      <Dropdown options={["1+", "2", "2+", "3"]} onSelect={handleSelectionChange}></Dropdown>
+      <SentenceFetcher currentSentence={currentSentence} error={error} />
+
+      <div>
+        {error && <p style={{ color: 'red' }}>{error}</p>}      
+        <input value={currentText} onChange={e=>setCurrentText(e.target.value)}  type="text" id="translation" placeholder="Enter your translation"></input>
+      </div>
+      <RateButton currentSentence={currentSentence} currentTranslation={currentText} ></RateButton>
     </div>
   );
 }
