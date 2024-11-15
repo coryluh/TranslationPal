@@ -1,9 +1,15 @@
-import { useState } from 'react';
+import { useState } from "react";
 
-function Dropdown({ options, onSelect }) {
+
+interface DropdownProps {
+  options: string[]; // Correctly typed as an array of strings
+  onSelect: (value: string) => void; // Function that takes a string as an argument
+}
+
+function Dropdown({ options, onSelect } : DropdownProps) {
     const [selectedOption, setSelectedOption] = useState(options[0] || '1+');
   
-    const handleChange = (event) => {
+    const handleChange = (event:React.ChangeEvent<HTMLSelectElement>) => {
       const newValue = event.target.value;
       setSelectedOption(newValue);
       onSelect(newValue); // Notify parent component
