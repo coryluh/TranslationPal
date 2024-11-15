@@ -80,10 +80,11 @@ async function rate_sentence() {
 }
 */
 
-function SentenceFetcher({ currentSentence, error }) {
+
+function SentenceFetcher({ currentSentence} : {currentSentence:string}) {
   return (
     <div>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {<p style={{ color: 'red' }}>error</p>}
       <button>New Sentence</button>
       <p>{currentSentence || ""}</p>
     </div>
@@ -91,11 +92,11 @@ function SentenceFetcher({ currentSentence, error }) {
 }
 
 
-function RateButton({currentSentence, currentTranslation}){
+function RateButton({currentSentence, currentTranslation} : {currentSentence:string, currentTranslation:string} ){
   console.log(currentSentence, currentTranslation)
   const [rating, setRating] = useState('');
 
-  const getTranslation = async (sentence, translation) => {
+  const getTranslation = async (sentence:string, translation:string) => {
     console.log(`${sentence}, ${translation}`);
     const prompt = `Rate the following translation from 1 to 10. Provide feedback if possible, breaking the sentence down and explaining the structure.\n\nOriginal sentence: "${sentence}"\nUser translation: "${translation}. `;
     console.log("Workin on rating")
@@ -142,7 +143,7 @@ export default function Home() {
   const [error, setError] = useState(null);
   const [currentText, setCurrentText] = useState("User Translation");
 
-  const getSentence = async (_difficulty) => {
+  const getSentence = async (_difficulty:string) => {
     const prompt = `Provide a sentence in Chinese from the internet (REQUIRED, do not fabricate), provide source link in parentheses, DLPT ILR Level ${_difficulty}. Only reply with the passage, this is for translation practice.`;
     console.log("Workin")
     try {
@@ -183,7 +184,7 @@ export default function Home() {
       <h1>Chinese Translation GPT Assistant</h1>
       <label>Select ILR Difficulty Level:</label>
       <Dropdown options={["1+", "2", "2+", "3"]} onSelect={handleSelectionChange}></Dropdown>
-      <SentenceFetcher currentSentence={currentSentence} error={error} />
+      <SentenceFetcher currentSentence={currentSentence} />
 
       <div>
         {error && <p style={{ color: 'red' }}>{error}</p>}      
